@@ -27,10 +27,6 @@ func solveProblem1() (int, error) {
 		if err != nil {
 			return -1, err
 		}
-
-		if currentLocation == 0 {
-			times0++
-		}
 	}
 
 	return times0, nil
@@ -43,16 +39,23 @@ func processInstruction(instruction string, currentLocation, times0 int) (int, i
 		return -1, -1, fmt.Errorf("Unable to process instruction: %s\n", instruction)
 	}
 
-	if direction == 'L' {
-		currentLocation -= amount
-	} else {
-		currentLocation += amount
+	newLocation := currentLocation
+	for range amount {
+		if direction == 'L' {
+			newLocation--
+		} else {
+			newLocation++
+		}
+
+		if newLocation%MAX_VALUE == 0 {
+			times0++
+		}
 	}
 
-	currentLocation = currentLocation % MAX_VALUE
-	if currentLocation < 0 {
-		currentLocation = MAX_VALUE + currentLocation
+	newLocation = newLocation % MAX_VALUE
+	if newLocation < 0 {
+		newLocation = MAX_VALUE + newLocation
 	}
 
-	return currentLocation, times0, nil
+	return newLocation, times0, nil
 }
