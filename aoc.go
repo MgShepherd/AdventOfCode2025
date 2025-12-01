@@ -9,8 +9,10 @@ import (
 const PROB_NUM = 1
 
 func main() {
-	_, err := problems.Solve(PROB_NUM)
+	result, err := problems.Solve(PROB_NUM)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s", err)
+	} else {
+		fmt.Printf("The solution is: %d\n", result)
 	}
 }
