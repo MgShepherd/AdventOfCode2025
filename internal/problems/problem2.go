@@ -47,22 +47,34 @@ func getSumInvalidInRange(start, end int) int {
 	numInvalid := 0
 	for i := start; i <= end; i++ {
 		strVal := strconv.Itoa(i)
-		if len(strVal)%2 != 0 {
+		if isInvalid(strVal) {
+			numInvalid += i
+		}
+	}
+	return numInvalid
+}
+
+func isInvalid(element string) bool {
+	for splitLen := 1; splitLen <= len(element)/2; splitLen++ {
+		if len(element)%splitLen != 0 {
 			continue
 		}
 
-		midPoint := len(strVal) / 2
 		invalid := true
-		for j := range midPoint {
-			if strVal[j] != strVal[midPoint+j] {
+		for i := 0; i < len(element)-1; i++ {
+			if i >= len(element) || i+splitLen >= len(element) {
+				break
+			}
+
+			if element[i] != element[i+splitLen] {
 				invalid = false
 				break
 			}
 		}
 
 		if invalid {
-			numInvalid += i
+			return true
 		}
 	}
-	return numInvalid
+	return false
 }
