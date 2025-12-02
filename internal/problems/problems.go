@@ -6,6 +6,8 @@ func Solve(probNum int) (int, error) {
 	switch probNum {
 	case 1:
 		return solveProblem1()
+	case 2:
+		return solveProblem2()
 	default:
 		return -1, fmt.Errorf("Unrecognised problem number %d\n", probNum)
 	}
