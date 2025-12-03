@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const LARGEST_LEN = 12
+
 func solveProblem3() (int, error) {
 	data, err := utils.ReadProblemFile(3)
 	if err != nil {
@@ -43,18 +45,30 @@ func convertToIntSlice(line string) ([]int, error) {
 }
 
 func getLargestJoltage(bank []int) int {
-	largestValues := make([]int, 2)
+	largestValues := make([]int, LARGEST_LEN)
 
 	for i, el := range bank {
-		if el > largestValues[0] && i < len(bank)-1 {
-			largestValues[0] = el
-			largestValues[1] = 0
-		} else if el > largestValues[1] {
-			largestValues[1] = el
+		for currentIdx := range largestValues {
+			if el > largestValues[currentIdx] && i < len(bank)-len(largestValues)+currentIdx+1 {
+				largestValues[currentIdx] = el
+				for j := currentIdx + 1; j < len(largestValues); j++ {
+					largestValues[j] = 0
+				}
+				break
+			}
 		}
 	}
 
-	largestVal := fmt.Sprintf("%d%d", largestValues[0], largestValues[1])
-	result, _ := strconv.Atoi(largestVal)
+	strVal := convertIntSliceToString(largestValues)
+	result, _ := strconv.Atoi(strVal)
 	return result
+}
+
+func convertIntSliceToString(elements []int) string {
+	var b strings.Builder
+	for _, el := range elements {
+		b.WriteString(strconv.Itoa(el))
+	}
+
+	return b.String()
 }
