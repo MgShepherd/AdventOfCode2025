@@ -40,10 +40,17 @@ func readLineToSlice(line string) []int {
 
 func getNumValid(grid [][]int) int {
 	numValid := 0
-	for y := range grid {
-		for x := range grid[y] {
-			if grid[y][x] == 1 && isValid(grid, x, y) {
-				numValid += 1
+	numRemoved := 0
+	for keepChecking := true; keepChecking; keepChecking = numRemoved > 0 {
+		numRemoved = 0
+
+		for y := range grid {
+			for x := range grid[y] {
+				if grid[y][x] == 1 && isValid(grid, x, y) {
+					grid[y][x] = 0
+					numRemoved++
+					numValid++
+				}
 			}
 		}
 	}
