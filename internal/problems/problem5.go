@@ -19,37 +19,26 @@ func solveProblem5() (int, error) {
 }
 
 func processData(data string) (int, error) {
-	processingRanges := true
 	rangeMap := make(map[int]int)
-	numFresh := 0
 
 	for _, line := range strings.Split(data, "\n") {
 		element := strings.TrimSpace(line)
 		if len(element) == 0 {
-			processingRanges = false
-			continue
+			break
 		}
 
-		var err error
-		if processingRanges {
-			err = addRangeToMap(rangeMap, element)
-		} else {
-			var fresh bool
-			fresh, err = checkIfFresh(rangeMap, element)
-			if fresh {
-				numFresh++
-			}
-		}
-
+		err := addToRangeMap(rangeMap, element)
 		if err != nil {
 			return -1, err
 		}
 	}
 
-	return numFresh, nil
+	performFinalPass(rangeMap)
+
+	return getTotalValuesWithinRanges(rangeMap), nil
 }
 
-func addRangeToMap(rangeMap map[int]int, element string) error {
+func addToRangeMap(rangeMap map[int]int, element string) error {
 	values := strings.Split(element, "-")
 	if len(values) != RANGE_COMPONENTS {
 		return fmt.Errorf("[ERROR] Unable to process range element: %s\n", element)
@@ -64,24 +53,52 @@ func addRangeToMap(rangeMap map[int]int, element string) error {
 		return fmt.Errorf("[ERROR] Unable to process end component of range %s\n", element)
 	}
 
-	if rangeMap[start] == 0 || rangeMap[start] < end {
+	updated := combineKeys(rangeMap, start, end)
+
+	if !updated {
 		rangeMap[start] = end
 	}
 	return nil
 }
 
-func checkIfFresh(rangeMap map[int]int, element string) (bool, error) {
-	intEl, err := strconv.Atoi(element)
-	fmt.Printf("Checking int element: %d\n", intEl)
-	if err != nil {
-		return false, fmt.Errorf("[ERROR] Unable to process element %s\n", element)
-	}
-
+func performFinalPass(rangeMap map[int]int) {
 	for key, val := range rangeMap {
-		if key <= intEl && val >= intEl {
-			return true, nil
+		delete(rangeMap, key)
+		combined := combineKeys(rangeMap, key, val)
+		if !combined {
+			rangeMap[key] = val
+		}
+	}
+}
+
+func combineKeys(rangeMap map[int]int, start, end int) bool {
+	updated := false
+	for key, val := range rangeMap {
+		if start <= key && end >= key {
+			delete(rangeMap, key)
+			if end > val {
+				rangeMap[start] = end
+			} else {
+				rangeMap[start] = val
+			}
+			updated = true
+		} else if end >= val && start <= val {
+			rangeMap[key] = end
+			updated = true
+		}
+
+		if updated {
+			return true
 		}
 	}
 
-	return false, nil
+	return false
+}
+
+func getTotalValuesWithinRanges(rangeMap map[int]int) int {
+	numValues := 0
+	for key, val := range rangeMap {
+		numValues += val - key + 1
+	}
+	return numValues
 }
