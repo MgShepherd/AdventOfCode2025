@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const PROB_NUM = 4
+const PROB_NUM = 5
 
 func main() {
 	result, err := problems.Solve(PROB_NUM)
