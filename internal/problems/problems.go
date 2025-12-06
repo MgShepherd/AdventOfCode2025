@@ -14,6 +14,8 @@ func Solve(probNum int) (int, error) {
 		return solveProblem4()
 	case 5:
 		return solveProblem5()
+	case 6:
+		return solveProblem6()
 	default:
 		return -1, fmt.Errorf("Unrecognised problem number %d\n", probNum)
 	}
