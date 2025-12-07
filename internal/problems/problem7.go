@@ -16,8 +16,8 @@ func solveProblem7() (int, error) {
 	}
 
 	grid, startPos := readToGrid(strings.Split(strings.TrimSpace(data), "\n"))
-	numSplits := traverseGrid(grid, startPos)
-	return numSplits, nil
+	numTimelines := getTimelinesFromLocation(grid, startPos, make(map[position]int))
+	return numTimelines, nil
 }
 
 func readToGrid(lines []string) ([][]int, position) {
@@ -43,39 +43,28 @@ func readToGrid(lines []string) ([][]int, position) {
 	return grid, startPos
 }
 
-func traverseGrid(grid [][]int, startPos position) int {
-	numSplits := 0
-	currentHeads := []position{startPos}
-	for len(currentHeads) > 0 {
-		nextHeads := []position{}
-		for _, head := range currentHeads {
-			if head.y+1 >= len(grid) {
-				continue
-			}
-
-			switch grid[head.y+1][head.x] {
-			case 0:
-				grid[head.y+1][head.x] = 2
-				nextHeads = append(nextHeads, position{x: head.x, y: head.y + 1})
-			case 1:
-				hasSplit := false
-				if head.x > 0 && grid[head.y+1][head.x-1] == 0 {
-					grid[head.y+1][head.x-1] = 2
-					nextHeads = append(nextHeads, position{x: head.x - 1, y: head.y + 1})
-					hasSplit = true
-				}
-				if head.x < len(grid[0])-1 && grid[head.y+1][head.x+1] == 0 {
-					grid[head.y+1][head.x+1] = 2
-					nextHeads = append(nextHeads, position{x: head.x + 1, y: head.y + 1})
-					hasSplit = true
-				}
-
-				if hasSplit {
-					numSplits++
-				}
-			}
-		}
-		currentHeads = nextHeads
+func getTimelinesFromLocation(grid [][]int, current position, timelinesFromPos map[position]int) int {
+	if val, ok := timelinesFromPos[current]; ok {
+		return val
 	}
-	return numSplits
+
+	if current.y+1 >= len(grid) {
+		return 1
+	}
+
+	total := 0
+	switch grid[current.y+1][current.x] {
+	case 0:
+		total = getTimelinesFromLocation(grid, position{x: current.x, y: current.y + 1}, timelinesFromPos)
+	case 1:
+		if current.x > 0 {
+			total += getTimelinesFromLocation(grid, position{x: current.x - 1, y: current.y + 1}, timelinesFromPos)
+		}
+		if current.x < len(grid[0])-1 {
+			total += getTimelinesFromLocation(grid, position{x: current.x + 1, y: current.y + 1}, timelinesFromPos)
+		}
+	}
+
+	timelinesFromPos[current] = total
+	return total
 }
