@@ -10,7 +10,6 @@ import (
 )
 
 const COORD_SIZE = 3
-const NUM_CONNECTIONS_TO_MAKE = 1000
 const NUM_LARGEST_CIRCUITS = 3
 
 type coord struct {
@@ -28,9 +27,12 @@ func solveProblem8() (int, error) {
 		return -1, err
 	}
 
-	circuits := getCircuits(getDistances(coords))
+	finalConnection, err := getCompletingConnection(getDistances(coords), len(coords))
+	if err != nil {
+		return -1, err
+	}
 
-	return getProductLargestCircuits(circuits), nil
+	return finalConnection[0].x * finalConnection[1].x, nil
 }
 
 func readToCoords(lines []string) ([]coord, error) {
@@ -77,12 +79,12 @@ func getDistances(coords []coord) map[int][]coord {
 	return distances
 }
 
-func getCircuits(distances map[int][]coord) [][]coord {
+func getCompletingConnection(distances map[int][]coord, numCoords int) ([]coord, error) {
 	keys := slices.Collect(maps.Keys(distances))
 	slices.Sort(keys)
 
 	circuits := [][]coord{}
-	for i := range NUM_CONNECTIONS_TO_MAKE {
+	for i := range len(keys) {
 		el1Idx, el2Idx := -1, -1
 		for j, c := range circuits {
 			for _, el := range c {
@@ -105,42 +107,24 @@ func getCircuits(distances map[int][]coord) [][]coord {
 			continue
 		} else if el1Idx != -1 && el2Idx == -1 {
 			circuits[el1Idx] = append(circuits[el1Idx], distances[keys[i]][1])
+			if len(circuits[el1Idx]) == numCoords {
+				return distances[keys[i]], nil
+			}
 		} else if el1Idx == -1 && el2Idx != -1 {
 			circuits[el2Idx] = append(circuits[el2Idx], distances[keys[i]][0])
+			if len(circuits[el2Idx]) == numCoords {
+				return distances[keys[i]], nil
+			}
 		} else if el1Idx != -1 && el2Idx != -1 {
 			circuits[el1Idx] = append(circuits[el1Idx], circuits[el2Idx]...)
 			circuits[el2Idx] = []coord{}
+			if len(circuits[el1Idx]) == numCoords {
+				return distances[keys[i]], nil
+			}
 		} else {
 			circuits = append(circuits, []coord{distances[keys[i]][0], distances[keys[i]][1]})
 		}
 	}
 
-	return circuits
-}
-
-func getProductLargestCircuits(circuits [][]coord) int {
-	largestCircuits := make([]int, NUM_LARGEST_CIRCUITS)
-
-	for _, c := range circuits {
-		cLen := len(c)
-		if cLen == 0 {
-			continue
-		}
-
-		for i := range largestCircuits {
-			if cLen > largestCircuits[i] {
-				for j := len(largestCircuits) - 1; j > i; j-- {
-					largestCircuits[j] = largestCircuits[j-1]
-				}
-				largestCircuits[i] = cLen
-				break
-			}
-		}
-	}
-
-	product := 1
-	for _, el := range largestCircuits {
-		product *= el
-	}
-	return product
+	return []coord{}, fmt.Errorf("[ERROR] Unable to find completing circuit\n")
 }
